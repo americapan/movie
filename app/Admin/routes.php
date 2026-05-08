@@ -30,4 +30,8 @@ Route::group([
 
     // 访问日志
     $router->resource('/visit-log', VisitLogController::class);
+
+    // 定时任务
+    $router->get('/task', 'TaskController@index');
+    $router->post('/task/execute', 'TaskController@execute');
 });

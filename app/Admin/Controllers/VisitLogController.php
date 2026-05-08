@@ -17,7 +17,21 @@ class VisitLogController extends AdminController
             $grid->model()->orderBy('id', 'desc');
 
             $grid->column('id', 'ID')->sortable();
-            $grid->column('ip_address', 'IP地址')->width(130);
+            $grid->column('ip_address', 'IP地址')->display(function ($ip) {
+                $parts = [];
+                if ($this->country) {
+                    $parts[] = $this->country;
+                }
+                if ($this->region) {
+                    $parts[] = $this->region;
+                }
+                if ($this->city) {
+                    $parts[] = $this->city;
+                }
+                $location = $parts ? '<br><small style="color:#999;">'.implode(' ', $parts).'</small>' : '';
+
+                return $ip.$location;
+            })->width(150);
             $grid->column('url', '访问URL')->width(300)->limit(60);
             $grid->column('method', '请求方式')->width(70)->label([
                 'GET' => 'success',
@@ -70,6 +84,8 @@ class VisitLogController extends AdminController
                 $filter->panel();
                 $filter->like('ip_address', 'IP地址');
                 $filter->like('url', 'URL');
+                $filter->like('country', '国家');
+                $filter->like('city', '城市');
                 $filter->equal('method', '请求方式')->select([
                     'GET' => 'GET',
                     'POST' => 'POST',
@@ -121,6 +137,9 @@ class VisitLogController extends AdminController
         return Show::make($id, new VisitLog, function (Show $show) {
             $show->field('id', 'ID');
             $show->field('ip_address', 'IP地址');
+            $show->field('country', '国家');
+            $show->field('region', '地区');
+            $show->field('city', '城市');
             $show->field('url', '完整URL')->link();
             $show->field('method', '请求方式');
             $show->field('status_code', '状态码');
@@ -145,9 +164,6 @@ class VisitLogController extends AdminController
 
                 return json_encode($v, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
             });
-            $show->field('country', '国家');
-            $show->field('region', '地区');
-            $show->field('city', '城市');
             $show->field('created_at', '访问时间');
 
             $show->panel()->tools(function ($tools) {

@@ -5,11 +5,17 @@ namespace App\Http\Middleware;
 use App\Models\VisitLog;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 
 class VisitLogMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
+        if ($request->is('admin*')) {
+            return $next($request);
+        }
+
         $startTime = microtime(true);
 
         $response = $next($request);
@@ -17,10 +23,13 @@ class VisitLogMiddleware
         $duration = round((microtime(true) - $startTime) * 1000, 2);
 
         $ua = $request->userAgent();
+        $ip = $request->ip();
+
+        $geo = $this->getGeoInfo($ip);
 
         try {
             VisitLog::create([
-                'ip_address' => $request->ip(),
+                'ip_address' => $ip,
                 'url' => $request->fullUrl(),
                 'method' => $request->method(),
                 'user_agent' => $ua,
@@ -35,11 +44,42 @@ class VisitLogMiddleware
                 'session_id' => $request->session()->getId(),
                 'status_code' => $response->status(),
                 'request_duration' => $duration,
+                'country' => $geo['country'] ?? null,
+                'region' => $geo['region'] ?? null,
+                'city' => $geo['city'] ?? null,
             ]);
         } catch (\Throwable $e) {
         }
 
         return $response;
+    }
+
+    private function getGeoInfo(string $ip): array
+    {
+        if ($ip === '127.0.0.1' || $ip === '::1' || str_starts_with($ip, '192.168.') || str_starts_with($ip, '10.') || str_starts_with($ip, '172.')) {
+            return ['country' => '本地', 'region' => '', 'city' => ''];
+        }
+
+        $cacheKey = 'ip_geo_'.$ip;
+
+        return Cache::remember($cacheKey, now()->addDays(7), function () use ($ip) {
+            try {
+                $response = Http::timeout(3)->get("http://ip-api.com/json/{$ip}?lang=zh-CN&fields=country,regionName,city");
+
+                if ($response->successful()) {
+                    $data = $response->json();
+
+                    return [
+                        'country' => $data['country'] ?? '',
+                        'region' => $data['regionName'] ?? '',
+                        'city' => $data['city'] ?? '',
+                    ];
+                }
+            } catch (\Throwable $e) {
+            }
+
+            return ['country' => '', 'region' => '', 'city' => ''];
+        });
     }
 
     private function detectDeviceType(?string $ua): string
