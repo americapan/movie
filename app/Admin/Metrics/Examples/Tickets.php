@@ -29,7 +29,6 @@ class Tickets extends RadialBar
     /**
      * 处理请求
      *
-     * @param Request $request
      *
      * @return mixed|void
      */
@@ -53,7 +52,6 @@ class Tickets extends RadialBar
     /**
      * 设置图表数据.
      *
-     * @param int $data
      *
      * @return $this
      */
@@ -67,8 +65,7 @@ class Tickets extends RadialBar
     /**
      * 卡片内容
      *
-     * @param string $content
-     *
+     * @param  string  $content
      * @return $this
      */
     public function withContent($content)
@@ -86,10 +83,9 @@ HTML
     /**
      * 卡片底部内容.
      *
-     * @param string $new
-     * @param string $open
-     * @param string $response
-     *
+     * @param  string  $new
+     * @param  string  $open
+     * @param  string  $response
      * @return $this
      */
     public function withFooter($new, $open, $response)

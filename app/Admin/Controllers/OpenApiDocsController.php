@@ -1,17 +1,13 @@
 <?php
+
 namespace App\Admin\Controllers;
 
-use Illuminate\Routing\Controller;
-use Dcat\Admin\Form;
-use Dcat\Admin\Grid;
-use Dcat\Admin\Show;
-use Dcat\Admin\Http\Controllers\AdminController;
 use Dcat\Admin\Layout\Content;
-use Dcat\Admin\Admin;
+use Illuminate\Routing\Controller;
 
 // 开放接口文档
-class OpenApiDocsController extends Controller {
-
+class OpenApiDocsController extends Controller
+{
     /**
      * page index
      */
@@ -20,19 +16,18 @@ class OpenApiDocsController extends Controller {
         return $content
             ->header('开放接口文档')
             ->description('全部')
-            ->breadcrumb(['text'=>'列表','url'=>''])
+            ->breadcrumb(['text' => '列表', 'url' => ''])
             ->body($this->viewHtml());
     }
-
-
 
     /**
      * @desc
      * author eRic
      * dateTime 2025-06-14 15:05
      */
-    protected function viewHtml(){
-        $admin_api_path = config('admin.openapi.admin-api.api_path','admin-api');
+    protected function viewHtml()
+    {
+        $admin_api_path = config('admin.openapi.admin-api.api_path', 'admin-api');
         $member_api_path = 'api';
         $htmls = <<<HTML
 
@@ -79,6 +74,7 @@ class OpenApiDocsController extends Controller {
     </div>
 </div>
 HTML;
-return $htmls;
+
+        return $htmls;
     }
 }

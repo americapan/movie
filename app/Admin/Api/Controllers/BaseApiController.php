@@ -1,13 +1,16 @@
 <?php
+
 namespace App\Admin\Api\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Dcat\Admin\Http\Resources\ApiResource;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Routing\Controller;
 use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Facades\Excel;
 
 abstract class BaseApiController extends Controller
 {
@@ -43,18 +46,19 @@ abstract class BaseApiController extends Controller
             $sortOrder = $request->input('order', 'asc'); // 默认升序
 
             // 验证字段是否可排序（防止 SQL 注入）
-            if(!empty($this->getSortableFields())){
+            if (! empty($this->getSortableFields())) {
                 if (in_array($sortField, $this->getSortableFields())) {
                     $query->orderBy($sortField, $sortOrder);
                 }
-            }else{
+            } else {
                 $query->orderBy($sortField, $sortOrder);
             }
 
         }
 
         $items = $query->paginate($pageSize);
-        return $this->returnData(0,1,$this->pageintes($items),'ok');
+
+        return $this->returnData(0, 1, $this->pageintes($items), 'ok');
     }
 
     /**
@@ -63,7 +67,8 @@ abstract class BaseApiController extends Controller
     public function show(int $id)
     {
         $info = $this->model->query()->findOrFail($id);
-        return $this->returnData(0,1,['info'=> $info],'ok');
+
+        return $this->returnData(0, 1, ['info' => $info], 'ok');
     }
 
     /**
@@ -72,14 +77,15 @@ abstract class BaseApiController extends Controller
     public function store(Request $request)
     {
         $validationRules = $this->getValidationRules('store');
-        $required = !empty($validationRules[0]) ? $validationRules[0]:[];
-        $required_msg = !empty($validationRules[1]) ? $validationRules[1]:[];
-        if(empty($required)){
+        $required = ! empty($validationRules[0]) ? $validationRules[0] : [];
+        $required_msg = ! empty($validationRules[1]) ? $validationRules[1] : [];
+        if (empty($required)) {
             throw new \Exception('数据校验规则不能为空');
         }
-        $data = $request->validate($required,$required_msg);
+        $data = $request->validate($required, $required_msg);
         $item = $this->model->query()->create($data);
-        return $this->returnData(0,1,[],'ok');
+
+        return $this->returnData(0, 1, [], 'ok');
     }
 
     /**
@@ -88,16 +94,17 @@ abstract class BaseApiController extends Controller
     public function updates(Request $request, int $id)
     {
         $validationRules = $this->getValidationRules('update');
-        $required = !empty($validationRules[0]) ? $validationRules[0]:[];
-        $required_msg = !empty($validationRules[1]) ? $validationRules[1]:[];
-        if(empty($required)){
+        $required = ! empty($validationRules[0]) ? $validationRules[0] : [];
+        $required_msg = ! empty($validationRules[1]) ? $validationRules[1] : [];
+        if (empty($required)) {
             throw new \Exception('数据校验规则不能为空');
         }
 
         $info = $this->model->query()->findOrFail($id);
-        $data = $request->validate($required,$required_msg);
+        $data = $request->validate($required, $required_msg);
         $info->update($data);
-        return $this->returnData(0,1,[],'ok');
+
+        return $this->returnData(0, 1, [], 'ok');
     }
 
     /**
@@ -107,12 +114,12 @@ abstract class BaseApiController extends Controller
     {
         $info = $this->model->query()->findOrFail($id);
         $info->delete();
-        return $this->returnData(0,1,[],'ok');
+
+        return $this->returnData(0, 1, [], 'ok');
     }
 
     /**
      * 批量删除
-     *
      */
     protected function batchDestroy(Request $request)
     {
@@ -122,19 +129,21 @@ abstract class BaseApiController extends Controller
             $deleted = $this->model->query()->whereIn('id', $ids)->delete();
 
             \DB::commit();
+
             return $this->returnData(0, 1, ['deleted_count' => $deleted], '批量删除成功');
         } catch (ValidationException $e) {
             \DB::rollBack();
-            return $this->returnData(422, 0, ['errors' => $e->errors()], '批量删除失败: ' . $e->getMessage());
+
+            return $this->returnData(422, 0, ['errors' => $e->errors()], '批量删除失败: '.$e->getMessage());
         } catch (\Exception $e) {
             \DB::rollBack();
-            return $this->returnData(500, 0, [], '批量删除失败: ' . $e->getMessage());
+
+            return $this->returnData(500, 0, [], '批量删除失败: '.$e->getMessage());
         }
     }
 
     /**
      * 下载导入模板文件
-     *
      */
     public function downImportTplFile(Request $request)
     {
@@ -164,8 +173,8 @@ abstract class BaseApiController extends Controller
             }
 
             // 标注必填
-            $isRequired = (!$nullable && $default === null) ? '(必填)' : '';
-            $header[] = $fieldName . ($comment ? "（{$comment}{$isRequired}）" : $isRequired);
+            $isRequired = (! $nullable && $default === null) ? '(必填)' : '';
+            $header[] = $fieldName.($comment ? "（{$comment}{$isRequired}）" : $isRequired);
 
             // 构造示例数据
             if (str_contains($type, 'int') || str_contains($type, 'serial')) {
@@ -191,26 +200,29 @@ abstract class BaseApiController extends Controller
             $example,
         ];
 
-            $filename = $table.'_import_template_' . date('YmdHis') . '.xlsx';
+        $filename = $table.'_import_template_'.date('YmdHis').'.xlsx';
 
-            return \Maatwebsite\Excel\Facades\Excel::download(new class($templateData) implements \Maatwebsite\Excel\Concerns\FromArray {
-                private $data;
+        return Excel::download(new class($templateData) implements FromArray
+        {
+            private $data;
 
-                public function __construct($data) {
-                    $this->data = $data;
-                }
+            public function __construct($data)
+            {
+                $this->data = $data;
+            }
 
-                public function array(): array {
-                    return $this->data;
-                }
-            }, $filename);
+            public function array(): array
+            {
+                return $this->data;
+            }
+        }, $filename);
     }
 
     /**
      * 导出数据
-     *
      */
-    protected function exportData(Request $request){
+    protected function exportData(Request $request)
+    {
         $format = $request->input('format', 'xlsx');
         $filters = $request->input('filters', []);
 
@@ -221,7 +233,7 @@ abstract class BaseApiController extends Controller
         $fillable = $this->model->getFillable();
 
         // 只允许导出fillable字段
-        if (!empty($fields)) {
+        if (! empty($fields)) {
             $fields = array_values(array_intersect($fields, $fillable));
             if (empty($fields)) {
                 // 如果指定字段都不合法，默认导出全部
@@ -234,11 +246,11 @@ abstract class BaseApiController extends Controller
         $query = $this->model->query();
 
         // 应用过滤器
-        if (!empty($filters)) {
+        if (! empty($filters)) {
             foreach ($filters as $filter) {
                 if (
-                    !isset($filter['field'], $filter['op'], $filter['value']) ||
-                    !in_array($filter['field'], $fillable)
+                    ! isset($filter['field'], $filter['op'], $filter['value']) ||
+                    ! in_array($filter['field'], $fillable)
                 ) {
                     continue;
                 }
@@ -272,42 +284,49 @@ abstract class BaseApiController extends Controller
         }
 
         // 应用排序
-        if (!empty($sort) && isset($sort['field'], $sort['direction'])) {
+        if (! empty($sort) && isset($sort['field'], $sort['direction'])) {
             $sortableFields = $this->getSortableFields();
             if (in_array($sort['field'], $sortableFields) && in_array(strtolower($sort['direction']), ['asc', 'desc'])) {
                 $query->orderBy($sort['field'], strtolower($sort['direction']));
             }
         }
-        if(empty($fields)){
+        if (empty($fields)) {
             $fields = $this->getFullFieldName();
         }
         // 查询数据
         $data = $query->get($fields)->toArray();
 
         // 使用匿名类实现导出功能
-        $export = new class($data, $fields) implements \Maatwebsite\Excel\Concerns\FromArray, \Maatwebsite\Excel\Concerns\WithHeadings {
+        $export = new class($data, $fields) implements FromArray, WithHeadings
+        {
             private $data;
+
             private $fields;
-            public function __construct($data, $fields) {
+
+            public function __construct($data, $fields)
+            {
                 $this->data = $data;
                 $this->fields = $fields;
             }
-            public function array(): array {
+
+            public function array(): array
+            {
                 return $this->data;
             }
-            public function headings(): array {
+
+            public function headings(): array
+            {
                 return $this->fields;
             }
         };
 
-        $filename = $this->model->getTable() . '_export_' . date('YmdHis') . '.' . $format;
+        $filename = $this->model->getTable().'_export_'.date('YmdHis').'.'.$format;
 
-        return \Maatwebsite\Excel\Facades\Excel::download($export, $filename);
+        return Excel::download($export, $filename);
     }
 
     /**
      * 获取所有字段及字段注释
-     *
      */
     public function field(Request $request)
     {
@@ -323,7 +342,7 @@ abstract class BaseApiController extends Controller
             ];
         })->toArray();
 
-        return new \Dcat\Admin\Http\Resources\ApiResource([
+        return new ApiResource([
             'fields' => $columns,
         ]);
     }
@@ -343,12 +362,13 @@ abstract class BaseApiController extends Controller
 
     /**
      * 获取所有字段名称
-     * @param array $exclude 排除的字段
+     *
+     * @param  array  $exclude  排除的字段
      */
-    public function getFullFieldName($exclude = ['id','created_at','updated_at','deleted_at'])
+    public function getFullFieldName($exclude = ['id', 'created_at', 'updated_at', 'deleted_at'])
     {
         $table = $this->model->getTable();
-        $cacheKey = $table . '|' . implode(',', $exclude);
+        $cacheKey = $table.'|'.implode(',', $exclude);
 
         if (isset(static::$fieldNameCache[$cacheKey])) {
             return static::$fieldNameCache[$cacheKey];
@@ -363,7 +383,8 @@ abstract class BaseApiController extends Controller
     /**
      * 应用过滤条件
      */
-    protected function applyWhereCondition($query, $field, $operator, $value){
+    protected function applyWhereCondition($query, $field, $operator, $value)
+    {
         switch ($operator) {
             case 'gt':
                 $query->where($field, '>', $value);
@@ -393,70 +414,78 @@ abstract class BaseApiController extends Controller
                 $query->where($field, $operator, $value);
         }
     }
+
     /**
      * 返回统一响应格式
      */
-    public function returnCode($code = 0, $status = 'success', $msg = 'ok') {
+    public function returnCode($code = 0, $status = 'success', $msg = 'ok')
+    {
         return [
-            'code'   => $code,
+            'code' => $code,
             'status' => $status,
-            'msg'    => $msg,
+            'msg' => $msg,
         ];
     }
-    public function returnData($code = '', $status = '', $data = [], $msg = '') {
+
+    public function returnData($code = '', $status = '', $data = [], $msg = '')
+    {
         if ($status == 1) {
             $status = 'success';
         } else {
             $status = 'error';
         }
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             $status = 'error';
-            //$msg = '给予返回的数据不是一个数组';
+            // $msg = '给予返回的数据不是一个数组';
         } else {
             if (count($data) == 0) {
-                $data = (object)array();
+                $data = (object) [];
             }
         }
-        $tipstr = config('errorCode.' . $code);
+        $tipstr = config('errorCode.'.$code);
         if ($msg != '') {
             $tipstr = $msg;
         }
+
         return response()->json([
-            'code'   => $code,
+            'code' => $code,
             'status' => $status,
-            'msg'    => $tipstr,
-            'data'   => $data,
+            'msg' => $tipstr,
+            'data' => $data,
         ]);
     }
+
     /**
      * @desc 封装分页展示数据
      * author eRic
      * $Resource 过滤后的数据
      * $list_total 记录总数
      */
-    public function pageintes($list,$pagesize = 20,$Resource = null,$list_total = ''){
+    public function pageintes($list, $pagesize = 20, $Resource = null, $list_total = '')
+    {
         $page = 1;
         $total = 0;
-        if($list instanceof LengthAwarePaginator){
+        if ($list instanceof LengthAwarePaginator) {
             $items = $list->items();
             $total = $list->total();
             $page = $list->currentPage();
-        }else{
+        } else {
             $items = $list;
             $total = count(collect($list)->toArray());
         }
-        if(!empty($Resource)){
+        if (! empty($Resource)) {
             $items = $Resource;
         }
-        if(!empty($list_total)){
-            $total =   $list_total;
+        if (! empty($list_total)) {
+            $total = $list_total;
         }
         $data['list'] = $items;
         $data['page_info'] = [
-            'pagesize' => (int)$pagesize,
+            'pagesize' => (int) $pagesize,
             'page' => $page,
             'total' => $total,
         ];
+
         return $data;
     }
 }

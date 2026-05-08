@@ -34,7 +34,6 @@ class TotalUsers extends Card
     /**
      * 处理请求.
      *
-     * @param Request $request
      *
      * @return void
      */
@@ -61,8 +60,7 @@ class TotalUsers extends Card
     }
 
     /**
-     * @param int $percent
-     *
+     * @param  int  $percent
      * @return $this
      */
     public function up($percent)
@@ -73,8 +71,7 @@ class TotalUsers extends Card
     }
 
     /**
-     * @param int $percent
-     *
+     * @param  int  $percent
      * @return $this
      */
     public function down($percent)
@@ -87,8 +84,7 @@ class TotalUsers extends Card
     /**
      * 设置卡片底部内容.
      *
-     * @param string|Renderable|\Closure $footer
-     *
+     * @param  string|Renderable|\Closure  $footer
      * @return $this
      */
     public function footer($footer)

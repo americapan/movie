@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\AdminUser;
+use App\Models\MemberUser;
 use App\Models\User;
 
 return [
@@ -72,11 +74,11 @@ return [
     'providers' => [
         'member_users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\MemberUser::class,
+            'model' => MemberUser::class,
         ],
         'admin_users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\AdminUser::class,
+            'model' => AdminUser::class,
         ],
         'users' => [
             'driver' => 'eloquent',

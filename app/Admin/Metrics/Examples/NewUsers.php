@@ -28,7 +28,6 @@ class NewUsers extends Line
     /**
      * 处理请求
      *
-     * @param Request $request
      *
      * @return mixed|void
      */
@@ -64,14 +63,13 @@ class NewUsers extends Line
                 // 卡片内容
                 $this->withContent('89.2k');
                 // 图表数据
-                $this->withChart([28, 40, 36, 52, 38, 60, 55,]);
+                $this->withChart([28, 40, 36, 52, 38, 60, 55]);
         }
     }
 
     /**
      * 设置图表数据.
      *
-     * @param array $data
      *
      * @return $this
      */
@@ -90,8 +88,7 @@ class NewUsers extends Line
     /**
      * 设置卡片内容.
      *
-     * @param string $content
-     *
+     * @param  string  $content
      * @return $this
      */
     public function withContent($content)

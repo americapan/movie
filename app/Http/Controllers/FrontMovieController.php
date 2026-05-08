@@ -42,24 +42,24 @@ class FrontMovieController extends Controller
             ->orderBy('publish_date', 'desc')
             ->take(5)
             ->get()
-            ->each(fn($m) => $m->title = self::cleanTitle($m->title));
+            ->each(fn ($m) => $m->title = self::cleanTitle($m->title));
 
         $latestMovies = Movie::orderBy('publish_date', 'desc')
             ->take(8)
             ->get()
-            ->each(fn($m) => $m->title = self::cleanTitle($m->title));
+            ->each(fn ($m) => $m->title = self::cleanTitle($m->title));
 
         $topRated = Movie::whereNotNull('douban_rating')
             ->orderBy('publish_date', 'desc')
             ->take(6)
             ->get()
-            ->each(fn($m) => $m->title = self::cleanTitle($m->title));
+            ->each(fn ($m) => $m->title = self::cleanTitle($m->title));
 
         $recentAdded = Movie::orderBy('publish_date', 'desc')
             ->skip(8)
             ->take(6)
             ->get()
-            ->each(fn($m) => $m->title = self::cleanTitle($m->title));
+            ->each(fn ($m) => $m->title = self::cleanTitle($m->title));
 
         $totalCount = Movie::count();
 
@@ -72,7 +72,8 @@ class FrontMovieController extends Controller
     {
         if ($page !== null && $page == 1) {
             $query = request()->getQueryString();
-            return redirect('/movies' . ($query ? '?' . $query : ''), 301);
+
+            return redirect('/movies'.($query ? '?'.$query : ''), 301);
         }
 
         if ($page !== null) {
@@ -89,7 +90,7 @@ class FrontMovieController extends Controller
         }
 
         $paginator = $moviesQuery->paginate(20)
-            ->through(fn($m) => tap($m, fn($x) => $x->title = self::cleanTitle($x->title)));
+            ->through(fn ($m) => tap($m, fn ($x) => $x->title = self::cleanTitle($x->title)));
 
         $movies = new StaticPagePaginator(
             $paginator->items(),
@@ -105,7 +106,7 @@ class FrontMovieController extends Controller
             ->selectRaw('movie_details.genre')
             ->distinct()
             ->pluck('genre')
-            ->flatMap(fn($g) => explode(' ', str_replace(['/', '|', ','], ' ', $g)))
+            ->flatMap(fn ($g) => explode(' ', str_replace(['/', '|', ','], ' ', $g)))
             ->unique()
             ->values()
             ->take(12);
@@ -122,7 +123,7 @@ class FrontMovieController extends Controller
             ->orderBy('publish_date', 'desc')
             ->take(4)
             ->get()
-            ->each(fn($m) => $m->title = self::cleanTitle($m->title));
+            ->each(fn ($m) => $m->title = self::cleanTitle($m->title));
 
         return view('movies.show', compact('movie', 'related'));
     }

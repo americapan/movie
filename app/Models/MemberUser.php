@@ -2,68 +2,67 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Models\Traits\HasPermissions;
+use Dcat\Admin\Traits\HasDateTimeFormatter;
+use Illuminate\Contracts\Auth\Access\Authorizable;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
-use App\Models\Traits\HasPermissions;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Contracts\Auth\Access\Authorizable;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Dcat\Admin\Traits\HasDateTimeFormatter;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 
-class MemberUser extends Authenticatable implements JWTSubject,AuthenticatableContract,Authorizable
+class MemberUser extends Authenticatable implements AuthenticatableContract, Authorizable, JWTSubject
 {
-    use HasPermissions, HasFactory, Notifiable,HasDateTimeFormatter;
+    use HasDateTimeFormatter, HasFactory, HasPermissions,Notifiable;
 
     protected $table = 'member_users';
 
     public static $status_arr = [
-            0 => '禁止',
-            1 => '正常',
-        ];
+        0 => '禁止',
+        1 => '正常',
+    ];
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     /** protected $fillable = [
-            'id',
-            'username', // 用户名
-            'phone', // 手机
-            'email', // 邮箱
-            'passwordSalt', // 密码Salt
-            'lastLoginTime', // 上次登录时间
-            'lastLoginIp', // 上次登录Ip
-            'phoneVerified', // 手机已验证
-            'emailVerified', // 邮箱已验证
-            'avatar', // 头像(小)
-            'avatarMedium', // 头像(中)
-            'avatarBig', // 头像(大)
-            'gender', // 性别
-            'realname', // 真实姓名
-            'signature', // 个性签名
-            'vipId', // vipID
-            'vipExpire', // vip过期时间
-            'nickname', // 昵称
-            'status', // 状态
-            'balance', // 余额
-            'freeze_price', // 冻结金额
-            'points', // 积分
-            'groupId', // 所属分组
-            'deleteAtTime', // 删除时间
-            'isDeleted', // 已删除
-            'messageCount', // 未读消息数量
-            'registerIp', // 注册IP
-            'is_certified', // 实名认证
-            'parent_id', // 上级
-            'temp_parent_id', // 临时上级
-            'junior_at', // 成为下级时间
-        ]; */
+        'id',
+        'username', // 用户名
+        'phone', // 手机
+        'email', // 邮箱
+        'passwordSalt', // 密码Salt
+        'lastLoginTime', // 上次登录时间
+        'lastLoginIp', // 上次登录Ip
+        'phoneVerified', // 手机已验证
+        'emailVerified', // 邮箱已验证
+        'avatar', // 头像(小)
+        'avatarMedium', // 头像(中)
+        'avatarBig', // 头像(大)
+        'gender', // 性别
+        'realname', // 真实姓名
+        'signature', // 个性签名
+        'vipId', // vipID
+        'vipExpire', // vip过期时间
+        'nickname', // 昵称
+        'status', // 状态
+        'balance', // 余额
+        'freeze_price', // 冻结金额
+        'points', // 积分
+        'groupId', // 所属分组
+        'deleteAtTime', // 删除时间
+        'isDeleted', // 已删除
+        'messageCount', // 未读消息数量
+        'registerIp', // 注册IP
+        'is_certified', // 实名认证
+        'parent_id', // 上级
+        'temp_parent_id', // 临时上级
+        'junior_at', // 成为下级时间
+    ]; */
+    protected $guarded = []; // 批量赋值的黑名单
 
-        protected $guarded = []; // 批量赋值的黑名单
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -76,8 +75,6 @@ class MemberUser extends Authenticatable implements JWTSubject,AuthenticatableCo
 
     /**
      * Create a new Eloquent model instance.
-     *
-     * @param  array  $attributes
      */
     public function __construct(array $attributes = [])
     {
@@ -104,5 +101,4 @@ class MemberUser extends Authenticatable implements JWTSubject,AuthenticatableCo
     {
         return [];
     }
-
 }

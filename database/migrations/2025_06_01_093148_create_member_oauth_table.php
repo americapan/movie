@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateMemberOauthTable extends Migration
 {
@@ -16,10 +16,10 @@ class CreateMemberOauthTable extends Migration
         Schema::create('member_oauth', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('member_user_id')->comment('用户ID');
-            $table->string('type',20)->default('')->comment('类型');
-            $table->string('open_id',255)->default('')->comment('OpenId');
-            $table->string('info_nick',255)->default('')->comment('昵称');
-            $table->string('info_avatar',255)->default('')->comment('头像');
+            $table->string('type', 20)->default('')->comment('类型');
+            $table->string('open_id', 255)->default('')->comment('OpenId');
+            $table->string('info_nick', 255)->default('')->comment('昵称');
+            $table->string('info_avatar', 255)->default('')->comment('头像');
             $table->timestamps();
         });
     }

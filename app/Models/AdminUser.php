@@ -2,21 +2,21 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Notifications\Notifiable;
-use Tymon\JWTAuth\Contracts\JWTSubject;
 use App\Models\Traits\HasPermissions;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Contracts\Auth\Access\Authorizable;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Dcat\Admin\Traits\HasDateTimeFormatter;
+use Illuminate\Contracts\Auth\Access\Authorizable;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class AdminUser extends Authenticatable implements JWTSubject,AuthenticatableContract,Authorizable
+class AdminUser extends Authenticatable implements AuthenticatableContract, Authorizable, JWTSubject
 {
-    use HasPermissions, HasFactory, Notifiable,HasDateTimeFormatter;
+    use HasDateTimeFormatter, HasFactory, HasPermissions,Notifiable;
 
     protected $table = 'admin_users';
 
@@ -43,8 +43,6 @@ class AdminUser extends Authenticatable implements JWTSubject,AuthenticatableCon
 
     /**
      * Create a new Eloquent model instance.
-     *
-     * @param  array  $attributes
      */
     public function __construct(array $attributes = [])
     {
@@ -54,8 +52,6 @@ class AdminUser extends Authenticatable implements JWTSubject,AuthenticatableCon
 
     /**
      * A user has and belongs to many roles.
-     *
-     * @return BelongsToMany
      */
     public function roles(): BelongsToMany
     {
@@ -65,8 +61,6 @@ class AdminUser extends Authenticatable implements JWTSubject,AuthenticatableCon
 
         return $this->belongsToMany($relatedModel, $pivotTable, 'user_id', 'role_id')->withTimestamps();
     }
-
-
 
     /**
      * 判断是否允许查看菜单.
@@ -108,10 +102,10 @@ class AdminUser extends Authenticatable implements JWTSubject,AuthenticatableCon
     {
         $menuModel = config('admin.database.menu_model');
         $where = [];
-        if(!empty($parent_id)){
-            $where = [['parent_id','=',$parent_id]];
+        if (! empty($parent_id)) {
+            $where = [['parent_id', '=', $parent_id]];
         }
-        if (!$this->isAdministrator()) {
+        if (! $this->isAdministrator()) {
             $roleIds = $this->roles()->pluck('id')->toArray();
 
             $menuIds = DB::table(config('admin.database.role_menu_table'))
@@ -128,15 +122,11 @@ class AdminUser extends Authenticatable implements JWTSubject,AuthenticatableCon
             $menus = $menuModel::where($where)->orderBy('order')->get()->toArray();
         }
 
-        return $this->buildMenuTree($menus,$parent_id);
+        return $this->buildMenuTree($menus, $parent_id);
     }
 
     /**
      * Build menu tree from flat array
-     *
-     * @param array $menus
-     * @param int $parentId
-     * @return array
      */
     protected function buildMenuTree(array $menus, int $parentId = 0): array
     {
@@ -159,8 +149,6 @@ class AdminUser extends Authenticatable implements JWTSubject,AuthenticatableCon
 
     /**
      * Determine if current user is administrator.
-     *
-     * @return bool
      */
     public function isAdministrator(): bool
     {
@@ -169,9 +157,6 @@ class AdminUser extends Authenticatable implements JWTSubject,AuthenticatableCon
 
     /**
      * Check if user has specific role.
-     *
-     * @param string $role
-     * @return bool
      */
     public function isRole(string $role): bool
     {

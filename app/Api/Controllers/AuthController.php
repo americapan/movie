@@ -1,29 +1,32 @@
 <?php
+
 namespace App\Api\Controllers;
 
+use Dedoc\Scramble\Attributes\Group;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Dedoc\Scramble\Attributes\QueryParameter;
-use Dedoc\Scramble\Attributes\BodyParameter;
-use Dedoc\Scramble\Attributes\Group;
 
-#[Group('授权','授权',1)]
+#[Group('授权', '授权', 1)]
 class AuthController
 {
     /**
      * 用户登陆
+     *
      * @unauthenticated
      */
-    public function login(Request $request){
+    public function login(Request $request)
+    {
         $request->validate(
             [
                 /**
                  * 用户名
+                 *
                  * @default 杨光
                  */
                 'username' => 'required',
                 /**
                  * 登陆密码
+                 *
                  * @default 12345678
                  */
                 'password' => 'required',
@@ -38,47 +41,47 @@ class AuthController
 
         $MemberUserModel = '\App\Models\MemberUser';
 
-        $center = $MemberUserModel::where(['username'=>$username])->first(); // 'is_active'=>1
+        $center = $MemberUserModel::where(['username' => $username])->first(); // 'is_active'=>1
 
-        if(empty($center)){
+        if (empty($center)) {
             return response()->json([
-                'code'  => 500,
-                'msg'   => '账户信息不存在'
+                'code' => 500,
+                'msg' => '账户信息不存在',
             ]);
         }
-        if(!Hash::check($password, $center->password)){
+        if (! Hash::check($password, $center->password)) {
             return [
-                'code'  => 500,
-                'msg'   => '账户密码不正确'
+                'code' => 500,
+                'msg' => '账户密码不正确',
             ];
         }
 
-        if (!$token = auth('adminapi')->fromUser($center)) {
+        if (! $token = auth('adminapi')->fromUser($center)) {
             return response()->json([
-                'code'  => 500,
-                'msg'   => '登录失败',
+                'code' => 500,
+                'msg' => '登录失败',
             ]);
         }
         $data = [
-            'access_token'  => $token,
-            'token_type'    => 'bearer',
-            'expires_in'    => auth('memberapi')->factory()->getTTL() * 60 * 24 * 7,
-            'username'      => $center->username,
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth('memberapi')->factory()->getTTL() * 60 * 24 * 7,
+            'username' => $center->username,
         ];
-        return response()->json(['code'=>0,'msg'=>'ok','data'=>$data]);
+
+        return response()->json(['code' => 0, 'msg' => 'ok', 'data' => $data]);
     }
 
     /**
      * 退出登陆
-     * 
      */
-    public function logout(Request $request){
+    public function logout(Request $request)
+    {
         auth('memberapi')->logout();
+
         return response()->json([
-            'code'  => 0,
-            'msg'   => '退出成功'
+            'code' => 0,
+            'msg' => '退出成功',
         ]);
     }
-
-
 }

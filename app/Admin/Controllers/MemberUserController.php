@@ -5,10 +5,9 @@ namespace App\Admin\Controllers;
 use App\Models\MemberUser;
 use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
-use Dcat\Admin\Show;
 use Dcat\Admin\Http\Controllers\AdminController;
 use Dcat\Admin\Layout\Content;
-use Dcat\Admin\Admin;
+use Dcat\Admin\Show;
 
 class MemberUserController extends AdminController
 {
@@ -20,7 +19,7 @@ class MemberUserController extends AdminController
         return $content
             ->header('用户管理')
             ->description('全部')
-            ->breadcrumb(['text'=>'列表','url'=>''])
+            ->breadcrumb(['text' => '列表', 'url' => ''])
             ->body($this->grid());
     }
 
@@ -31,13 +30,13 @@ class MemberUserController extends AdminController
      */
     protected function grid()
     {
-        return Grid::make(new MemberUser(), function (Grid $grid) {
+        return Grid::make(new MemberUser, function (Grid $grid) {
             $grid->column('id')->sortable();
-            $grid->column('avatar','头像')->image('', 44, 44);
+            $grid->column('avatar', '头像')->image('', 44, 44);
             $grid->column('username');
             $grid->column('phone');
             $grid->column('email');
-            
+
             $grid->column('points');
             $grid->column('balance');
             $grid->column('status')->using(MemberUser::$status_arr)->label([
@@ -67,13 +66,12 @@ class MemberUserController extends AdminController
     /**
      * Make a show builder.
      *
-     * @param mixed $id
-     *
+     * @param  mixed  $id
      * @return Show
      */
     protected function detail($id)
     {
-        return Show::make($id, new MemberUser(), function (Show $show) {
+        return Show::make($id, new MemberUser, function (Show $show) {
             $show->field('id');
             $show->field('username');
             $show->field('phone');
@@ -115,7 +113,7 @@ class MemberUserController extends AdminController
      */
     protected function form()
     {
-        return Form::make(new MemberUser(), function (Form $form) {
+        return Form::make(new MemberUser, function (Form $form) {
             $form->display('id');
             $id = $form->getKey();
             $form->text('username')->required();
@@ -135,7 +133,7 @@ class MemberUserController extends AdminController
                     ->minLength(5)
                     ->maxLength(20);
             }
-            $form->password('password_confirmation','确认密码')
+            $form->password('password_confirmation', '确认密码')
                 ->same('password')
                 ->required();
 

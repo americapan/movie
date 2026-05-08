@@ -37,14 +37,13 @@ class Sessions extends Bar
             $color->primary(),
             $dark35,
             $dark35,
-            $dark35
+            $dark35,
         ]);
     }
 
     /**
      * 处理请求
      *
-     * @param Request $request
      *
      * @return mixed|void
      */
@@ -69,7 +68,6 @@ class Sessions extends Bar
     /**
      * 设置图表数据.
      *
-     * @param array $data
      *
      * @return $this
      */
@@ -83,10 +81,9 @@ class Sessions extends Bar
     /**
      * 设置卡片内容.
      *
-     * @param string $title
-     * @param string $value
-     * @param string $style
-     *
+     * @param  string  $title
+     * @param  string  $value
+     * @param  string  $style
      * @return $this
      */
     public function withContent($title, $value, $style = 'success')
