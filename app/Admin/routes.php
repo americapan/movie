@@ -15,7 +15,10 @@ Route::group([
 
     $router->get('/', 'HomeController@index');
     $router->resource('/member-user', MemberUserController::class);
+    //* 视影管理
     $router->resource('/movie', MovieController::class);
+
+    //* 用户管理
 
     // 开放接口
     $router->get('openapi-docs', 'OpenApiDocsController@index');
