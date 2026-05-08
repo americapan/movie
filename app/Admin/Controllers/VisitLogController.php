@@ -17,22 +17,14 @@ class VisitLogController extends AdminController
             $grid->model()->orderBy('id', 'desc');
 
             $grid->column('id', 'ID')->sortable();
-            $grid->column('ip_address', 'IP地址')->display(function ($ip) {
-                $parts = [];
-                if ($this->country) {
-                    $parts[] = $this->country;
-                }
-                if ($this->region) {
-                    $parts[] = $this->region;
-                }
-                if ($this->city) {
-                    $parts[] = $this->city;
-                }
-                $location = $parts ? '<br><small style="color:#999;">'.implode(' ', $parts).'</small>' : '';
-
-                return $ip.$location;
-            })->width(150);
-            $grid->column('url', '访问URL')->width(300)->limit(60);
+            $grid->column('ip_address', 'IP地址')->width(140);
+            $grid->column('country', '国家')->width(70)->display(function ($v) {
+                return $v ?: '-';
+            });
+            $grid->column('city', '城市')->width(100)->display(function ($v) {
+                return $v ?: '-';
+            });
+            $grid->column('url', '访问URL')->width(280)->limit(50);
             $grid->column('method', '请求方式')->width(70)->label([
                 'GET' => 'success',
                 'POST' => 'primary',
