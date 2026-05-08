@@ -1,6 +1,7 @@
 <?php
 
 use App\Admin\Controllers\MovieController;
+use App\Admin\Controllers\VisitLogController;
 use Dcat\Admin\Admin;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
@@ -15,10 +16,10 @@ Route::group([
 
     $router->get('/', 'HomeController@index');
     $router->resource('/member-user', MemberUserController::class);
-    //* 视影管理
+    // * 视影管理
     $router->resource('/movie', MovieController::class);
 
-    //* 用户管理
+    // * 用户管理
 
     // 开放接口
     $router->get('openapi-docs', 'OpenApiDocsController@index');
@@ -26,4 +27,7 @@ Route::group([
     // 全局配置
     $router->get('web-config', 'WebConfigController@index');
     $router->post('web-config/save', 'WebConfigController@saveData');
+
+    // 访问日志
+    $router->resource('/visit-log', VisitLogController::class);
 });
