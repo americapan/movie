@@ -19,12 +19,12 @@ class SecurityHeaders
         $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
 
         $csp = "default-src 'self'; "
-            ."script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com; "
+            ."script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://pagead2.googlesyndication.com https://www.googletagmanager.com https://www.google-analytics.com; "
             ."style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             ."font-src 'self' https://fonts.gstatic.com; "
             ."img-src 'self' data: https:; "
             ."connect-src 'self' https:; "
-            ."frame-src 'self'; "
+            ."frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; "
             ."object-src 'none'; "
             ."base-uri 'self'; "
             ."form-action 'self';";
