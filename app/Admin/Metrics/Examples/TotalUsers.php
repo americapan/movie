@@ -2,91 +2,46 @@
 
 namespace App\Admin\Metrics\Examples;
 
+use App\Models\Movie;
 use Dcat\Admin\Widgets\Metrics\Card;
-use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 
 class TotalUsers extends Card
 {
-    /**
-     * 卡片底部内容.
-     *
-     * @var string|Renderable|\Closure
-     */
     protected $footer;
 
-    /**
-     * 初始化卡片.
-     */
     protected function init()
     {
         parent::init();
 
-        $this->title('Total Users');
+        $this->title('影视总数');
         $this->dropdown([
-            '7' => 'Last 7 Days',
-            '28' => 'Last 28 Days',
-            '30' => 'Last Month',
-            '365' => 'Last Year',
+            '7' => '最近7天',
+            '28' => '最近28天',
+            '30' => '最近30天',
+            '365' => '最近一年',
         ]);
     }
 
-    /**
-     * 处理请求.
-     *
-     *
-     * @return void
-     */
     public function handle(Request $request)
     {
-        switch ($request->input('option')) {
-            case '365':
-                $this->content(mt_rand(600, 1500));
-                $this->down(mt_rand(1, 30));
-                break;
-            case '30':
-                $this->content(mt_rand(170, 250));
-                $this->up(mt_rand(12, 50));
-                break;
-            case '28':
-                $this->content(mt_rand(155, 200));
-                $this->up(mt_rand(5, 50));
-                break;
-            case '7':
-            default:
-                $this->content(143);
-                $this->up(15);
-        }
+        $days = (int) ($request->input('option', 7));
+        $since = now()->subDays($days);
+
+        $total = Movie::count();
+        $recent = Movie::where('collected_at', '>=', $since)->count();
+
+        $this->content($total);
+        $this->up($recent);
     }
 
-    /**
-     * @param  int  $percent
-     * @return $this
-     */
     public function up($percent)
     {
         return $this->footer(
-            "<i class=\"feather icon-trending-up text-success\"></i> {$percent}% Increase"
+            "<i class=\"feather icon-film text-success\"></i> 近期新增 {$percent} 部"
         );
     }
 
-    /**
-     * @param  int  $percent
-     * @return $this
-     */
-    public function down($percent)
-    {
-        return $this->footer(
-            "<i class=\"feather icon-trending-down text-danger\"></i> {$percent}% Decrease"
-        );
-    }
-
-    /**
-     * 设置卡片底部内容.
-     *
-     * @param  string|Renderable|\Closure  $footer
-     * @return $this
-     */
     public function footer($footer)
     {
         $this->footer = $footer;
@@ -94,11 +49,6 @@ class TotalUsers extends Card
         return $this;
     }
 
-    /**
-     * 渲染卡片内容.
-     *
-     * @return string
-     */
     public function renderContent()
     {
         $content = parent::renderContent();
@@ -113,11 +63,6 @@ class TotalUsers extends Card
 HTML;
     }
 
-    /**
-     * 渲染卡片底部内容.
-     *
-     * @return string
-     */
     public function renderFooter()
     {
         return $this->toString($this->footer);

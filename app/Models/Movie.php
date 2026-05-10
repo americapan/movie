@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use Dcat\Admin\Traits\HasDateTimeFormatter;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Movie extends Model
 {
-    use HasDateTimeFormatter;
+    use HasDateTimeFormatter, HasFactory;
 
     protected $table = 'movies';
 

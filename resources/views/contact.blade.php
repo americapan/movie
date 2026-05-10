@@ -159,3 +159,41 @@
         </div>
     </section>
 @endsection
+
+@section('scripts')
+    <script>
+        function validateContactForm(event) {
+            event.preventDefault();
+            const name = document.getElementById('contactName')?.value.trim();
+            const email = document.getElementById('contactEmail')?.value.trim();
+            const message = document.getElementById('contactMessage')?.value.trim();
+            const btn = event.target.querySelector('button[type="submit"]');
+
+            if (!name) {
+                alert('请输入您的姓名');
+                return false;
+            }
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                alert('请输入有效的邮箱地址');
+                return false;
+            }
+            if (!message) {
+                alert('请输入消息内容');
+                return false;
+            }
+
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '发送中...';
+
+            setTimeout(() => {
+                alert('感谢您的留言！我们会尽快回复。');
+                event.target.reset();
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }, 800);
+
+            return false;
+        }
+    </script>
+@endsection

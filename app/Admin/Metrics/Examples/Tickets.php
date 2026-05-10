@@ -2,59 +2,50 @@
 
 namespace App\Admin\Metrics\Examples;
 
+use App\Models\Movie;
 use Dcat\Admin\Widgets\Metrics\RadialBar;
 use Illuminate\Http\Request;
 
 class Tickets extends RadialBar
 {
-    /**
-     * 初始化卡片内容
-     */
     protected function init()
     {
         parent::init();
 
-        $this->title('Tickets');
+        $this->title('豆瓣评分');
         $this->height(400);
         $this->chartHeight(300);
-        $this->chartLabels('Completed Tickets');
+        $this->chartLabels('有评分率');
         $this->dropdown([
-            '7' => 'Last 7 Days',
-            '28' => 'Last 28 Days',
-            '30' => 'Last Month',
-            '365' => 'Last Year',
+            '7' => '最近7天',
+            '28' => '最近28天',
+            '30' => '最近30天',
+            '365' => '最近一年',
         ]);
     }
 
-    /**
-     * 处理请求
-     *
-     *
-     * @return mixed|void
-     */
     public function handle(Request $request)
     {
-        switch ($request->input('option')) {
-            case '365':
-            case '30':
-            case '28':
-            case '7':
-            default:
-                // 卡片内容
-                $this->withContent(162);
-                // 卡片底部
-                $this->withFooter(29, 63, '1d');
-                // 图表数据
-                $this->withChart(83);
-        }
+        $days = (int) ($request->input('option', 7));
+        $since = now()->subDays($days);
+
+        $withRating = Movie::where('collected_at', '>=', $since)
+            ->whereNotNull('douban_rating')
+            ->where('douban_rating', '>', 0)
+            ->count();
+
+        $total = Movie::where('collected_at', '>=', $since)->count();
+        $pct = $total > 0 ? round($withRating / $total * 100) : 0;
+
+        $this->withContent($withRating);
+        $this->withFooter(
+            Movie::where('collected_at', '>=', now()->subDay())->count(),
+            Movie::where('collected_at', '<', now()->subDay())->where('collected_at', '>=', now()->subDays(2))->count(),
+            '1d'
+        );
+        $this->withChart($pct);
     }
 
-    /**
-     * 设置图表数据.
-     *
-     *
-     * @return $this
-     */
     public function withChart(int $data)
     {
         return $this->chart([
@@ -62,47 +53,33 @@ class Tickets extends RadialBar
         ]);
     }
 
-    /**
-     * 卡片内容
-     *
-     * @param  string  $content
-     * @return $this
-     */
     public function withContent($content)
     {
         return $this->content(
             <<<HTML
 <div class="d-flex flex-column flex-wrap text-center">
     <h1 class="font-lg-2 mt-2 mb-0">{$content}</h1>
-    <small>Tickets</small>
+    <small>有豆瓣评分影视</small>
 </div>
 HTML
         );
     }
 
-    /**
-     * 卡片底部内容.
-     *
-     * @param  string  $new
-     * @param  string  $open
-     * @param  string  $response
-     * @return $this
-     */
     public function withFooter($new, $open, $response)
     {
         return $this->footer(
             <<<HTML
 <div class="d-flex justify-content-between p-1" style="padding-top: 0!important;">
     <div class="text-center">
-        <p>New Tickets</p>
+        <p>昨日新增</p>
         <span class="font-lg-1">{$new}</span>
     </div>
     <div class="text-center">
-        <p>Open Tickets</p>
+        <p>前日新增</p>
         <span class="font-lg-1">{$open}</span>
     </div>
     <div class="text-center">
-        <p>Response Time</p>
+        <p>环比变化</p>
         <span class="font-lg-1">{$response}</span>
     </div>
 </div>

@@ -147,21 +147,40 @@
 
 @section('scripts')
     <script>
+        var searchTimer = null;
         document.getElementById('searchInput').addEventListener('input', function(e) {
-            const query = e.target.value.toLowerCase();
-            let hasVisible = false;
+            var query = e.target.value;
+
+            // 客户端过滤
+            var q = query.toLowerCase();
+            var hasVisible = false;
             document.querySelectorAll('.card-hover').forEach(function(card) {
-                const title = (card.querySelector('h2') || {}).textContent || '';
-                if (title.toLowerCase().includes(query)) {
+                var title = (card.querySelector('h2') || {}).textContent || '';
+                if (title.toLowerCase().includes(q)) {
                     card.style.display = '';
                     hasVisible = true;
                 } else {
                     card.style.display = 'none';
                 }
             });
-            const noResults = document.getElementById('noResults');
+            var noResults = document.getElementById('noResults');
             if (noResults) {
                 noResults.classList.toggle('hidden', hasVisible || query === '');
+            }
+
+            // 搜索关键词记录（防抖800ms）
+            clearTimeout(searchTimer);
+            if (query.trim().length >= 2) {
+                searchTimer = setTimeout(function() {
+                    fetch('/search-log', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                        },
+                        body: JSON.stringify({q: query.trim()})
+                    });
+                }, 800);
             }
         });
     </script>

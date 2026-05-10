@@ -23,45 +23,59 @@ class MemberUser extends Authenticatable implements AuthenticatableContract, Aut
         1 => '正常',
     ];
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    /** protected $fillable = [
-        'id',
-        'username', // 用户名
-        'phone', // 手机
-        'email', // 邮箱
-        'passwordSalt', // 密码Salt
-        'lastLoginTime', // 上次登录时间
-        'lastLoginIp', // 上次登录Ip
-        'phoneVerified', // 手机已验证
-        'emailVerified', // 邮箱已验证
-        'avatar', // 头像(小)
-        'avatarMedium', // 头像(中)
-        'avatarBig', // 头像(大)
-        'gender', // 性别
-        'realname', // 真实姓名
-        'signature', // 个性签名
-        'vipId', // vipID
-        'vipExpire', // vip过期时间
-        'nickname', // 昵称
-        'status', // 状态
-        'balance', // 余额
-        'freeze_price', // 冻结金额
-        'points', // 积分
-        'groupId', // 所属分组
-        'deleteAtTime', // 删除时间
-        'isDeleted', // 已删除
-        'messageCount', // 未读消息数量
-        'registerIp', // 注册IP
-        'is_certified', // 实名认证
-        'parent_id', // 上级
-        'temp_parent_id', // 临时上级
-        'junior_at', // 成为下级时间
-    ]; */
-    protected $guarded = []; // 批量赋值的黑名单
+    protected $fillable = [
+        'username',
+        'phone',
+        'email',
+        'password',
+        'last_login_time',
+        'last_login_ip',
+        'phone_verified',
+        'email_verified',
+        'avatar',
+        'avatar_medium',
+        'avatar_big',
+        'gender',
+        'realname',
+        'signature',
+        'vip_id',
+        'vip_expire',
+        'nickname',
+        'status',
+        'balance',
+        'freeze_price',
+        'points',
+        'group_id',
+        'delete_at_time',
+        'is_deleted',
+        'message_count',
+        'register_ip',
+        'is_certified',
+        'parent_id',
+        'temp_parent_id',
+        'junior_at',
+    ];
+
+    protected $casts = [
+        'last_login_time' => 'datetime',
+        'phone_verified' => 'boolean',
+        'email_verified' => 'boolean',
+        'gender' => 'integer',
+        'vip_id' => 'integer',
+        'vip_expire' => 'datetime',
+        'status' => 'integer',
+        'balance' => 'decimal:2',
+        'freeze_price' => 'decimal:2',
+        'points' => 'integer',
+        'group_id' => 'integer',
+        'delete_at_time' => 'integer',
+        'is_deleted' => 'boolean',
+        'message_count' => 'integer',
+        'is_certified' => 'boolean',
+        'parent_id' => 'integer',
+        'temp_parent_id' => 'integer',
+        'junior_at' => 'datetime',
+    ];
 
     /**
      * The attributes that should be hidden for serialization.

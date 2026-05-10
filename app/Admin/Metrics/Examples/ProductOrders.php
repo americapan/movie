@@ -2,59 +2,52 @@
 
 namespace App\Admin\Metrics\Examples;
 
+use App\Models\Movie;
 use Dcat\Admin\Widgets\Metrics\Round;
 use Illuminate\Http\Request;
 
 class ProductOrders extends Round
 {
-    /**
-     * 初始化卡片内容
-     */
     protected function init()
     {
         parent::init();
 
-        $this->title('Product Orders');
-        $this->chartLabels(['Finished', 'Pending', 'Rejected']);
+        $this->title('影视状态');
+        $this->chartLabels(['有详情', '无详情', '无海报']);
         $this->dropdown([
-            '7' => 'Last 7 Days',
-            '28' => 'Last 28 Days',
-            '30' => 'Last Month',
-            '365' => 'Last Year',
+            '7' => '最近7天',
+            '28' => '最近28天',
+            '30' => '最近30天',
+            '365' => '最近一年',
         ]);
     }
 
-    /**
-     * 处理请求
-     *
-     *
-     * @return mixed|void
-     */
     public function handle(Request $request)
     {
-        switch ($request->input('option')) {
-            case '365':
-            case '30':
-            case '28':
-            case '7':
-            default:
-                // 卡片内容
-                $this->withContent(23043, 14658, 4758);
+        $days = (int) ($request->input('option', 7));
+        $since = now()->subDays($days);
 
-                // 图表数据
-                $this->withChart([70, 52, 26]);
+        $total = Movie::where('collected_at', '>=', $since)->count();
 
-                // 总数
-                $this->chartTotal('Total', 344);
-        }
+        $withDetail = Movie::where('collected_at', '>=', $since)
+            ->whereHas('detail')
+            ->count();
+
+        $withoutDetail = Movie::where('collected_at', '>=', $since)
+            ->whereDoesntHave('detail')
+            ->whereNotNull('poster_url')
+            ->where('poster_url', '!=', '')
+            ->count();
+
+        $noPoster = $total - $withDetail - $withoutDetail;
+
+        $this->withContent($withDetail, $withoutDetail, $noPoster);
+        $total > 0
+            ? $this->withChart([round($withDetail / $total * 100), round($withoutDetail / $total * 100), round($noPoster / $total * 100)])
+            : $this->withChart([0, 0, 0]);
+        $this->chartTotal('总计', $total);
     }
 
-    /**
-     * 设置图表数据.
-     *
-     *
-     * @return $this
-     */
     public function withChart(array $data)
     {
         return $this->chart([
@@ -62,14 +55,6 @@ class ProductOrders extends Round
         ]);
     }
 
-    /**
-     * 卡片内容.
-     *
-     * @param  int  $finished
-     * @param  int  $pending
-     * @param  int  $rejected
-     * @return $this
-     */
     public function withContent($finished, $pending, $rejected)
     {
         return $this->content(
@@ -78,27 +63,25 @@ class ProductOrders extends Round
     <div class="chart-info d-flex justify-content-between mb-1 mt-2" >
           <div class="series-info d-flex align-items-center">
               <i class="fa fa-circle-o text-bold-700 text-primary"></i>
-              <span class="text-bold-600 ml-50">Finished</span>
+              <span class="text-bold-600 ml-50">有详情</span>
           </div>
           <div class="product-result">
               <span>{$finished}</span>
           </div>
     </div>
-
     <div class="chart-info d-flex justify-content-between mb-1">
           <div class="series-info d-flex align-items-center">
               <i class="fa fa-circle-o text-bold-700 text-warning"></i>
-              <span class="text-bold-600 ml-50">Pending</span>
+              <span class="text-bold-600 ml-50">无详情</span>
           </div>
           <div class="product-result">
               <span>{$pending}</span>
           </div>
     </div>
-
      <div class="chart-info d-flex justify-content-between mb-1">
           <div class="series-info d-flex align-items-center">
               <i class="fa fa-circle-o text-bold-700 text-danger"></i>
-              <span class="text-bold-600 ml-50">Rejected</span>
+              <span class="text-bold-600 ml-50">无海报</span>
           </div>
           <div class="product-result">
               <span>{$rejected}</span>

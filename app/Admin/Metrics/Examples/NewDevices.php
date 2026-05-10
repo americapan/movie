@@ -2,16 +2,14 @@
 
 namespace App\Admin\Metrics\Examples;
 
+use App\Models\VisitLog;
 use Dcat\Admin\Admin;
 use Dcat\Admin\Widgets\Metrics\Donut;
 
 class NewDevices extends Donut
 {
-    protected $labels = ['Desktop', 'Mobile'];
+    protected $labels = ['桌面端', '移动端'];
 
-    /**
-     * 初始化卡片内容
-     */
     protected function init()
     {
         parent::init();
@@ -19,18 +17,12 @@ class NewDevices extends Donut
         $color = Admin::color();
         $colors = [$color->primary(), $color->alpha('blue2', 0.5)];
 
-        $this->title('New Devices');
-        $this->subTitle('Last 30 days');
+        $this->title('设备分布');
+        $this->subTitle('最近30天');
         $this->chartLabels($this->labels);
-        // 设置图表颜色
         $this->chartColors($colors);
     }
 
-    /**
-     * 渲染模板
-     *
-     * @return string
-     */
     public function render()
     {
         $this->fill();
@@ -38,25 +30,20 @@ class NewDevices extends Donut
         return parent::render();
     }
 
-    /**
-     * 写入数据.
-     *
-     * @return void
-     */
     public function fill()
     {
-        $this->withContent(44.9, 28.6);
+        $since = now()->subDays(30);
+        $total = VisitLog::where('created_at', '>=', $since)->count();
 
-        // 图表数据
-        $this->withChart([44.9, 28.6]);
+        $desktop = $total > 0
+            ? round(VisitLog::where('created_at', '>=', $since)->where('device_type', 'desktop')->count() / $total * 100, 1)
+            : 0;
+        $mobile = $total > 0 ? round(100 - $desktop, 1) : 0;
+
+        $this->withContent($desktop, $mobile);
+        $this->withChart([$desktop, $mobile]);
     }
 
-    /**
-     * 设置图表数据.
-     *
-     *
-     * @return $this
-     */
     public function withChart(array $data)
     {
         return $this->chart([
@@ -64,13 +51,6 @@ class NewDevices extends Donut
         ]);
     }
 
-    /**
-     * 设置卡片头部内容.
-     *
-     * @param  mixed  $desktop
-     * @param  mixed  $mobile
-     * @return $this
-     */
     protected function withContent($desktop, $mobile)
     {
         $blue = Admin::color()->alpha('blue2', 0.5);
@@ -84,13 +64,13 @@ class NewDevices extends Donut
     <div style="width: {$labelWidth}px">
         <i class="fa fa-circle text-primary"></i> {$this->labels[0]}
     </div>
-    <div>{$desktop}</div>
+    <div>{$desktop}%</div>
 </div>
 <div class="d-flex pl-1 pr-1" style="{$style}">
     <div style="width: {$labelWidth}px">
         <i class="fa fa-circle" style="color: $blue"></i> {$this->labels[1]}
     </div>
-    <div>{$mobile}</div>
+    <div>{$mobile}%</div>
 </div>
 HTML
         );

@@ -67,18 +67,17 @@ class MemberOauth extends Model
         self::GOOGLE => 'Google',
     ];
 
-    // 可以被批量赋值的属性 也方便查看表所有字段及注释
-    /** protected $fillable = [
-        'member_user_id', // 用户ID
-        'type', // 类型
-        'open_id', // OpenId
-        'info_nick', // 昵称
-        'info_avatar', // 头像
-    ]; */
-    protected $guarded = []; // 批量赋值的黑名单
-    // protected $fillable = []; // 可以作为批量赋值的白名单
-    // protected $appends = []; // 追加属性
-    // protected $hidden = []; // 数组中的属性会被隐藏
+    protected $fillable = [
+        'member_user_id',
+        'type',
+        'open_id',
+        'info_nick',
+        'info_avatar',
+    ];
+
+    protected $casts = [
+        'member_user_id' => 'integer',
+    ];
 
     // 获取所有类型（可用于下拉选项）
     public static function getTypes()
@@ -86,9 +85,13 @@ class MemberOauth extends Model
         return (new static)->type;
     }
 
-    // 获取类型名称
+    public function memberUser()
+    {
+        return $this->belongsTo(MemberUser::class);
+    }
+
     public function getTypeNameAttribute()
     {
-        return $this->type[$this->attributes['type']] ?? '未知';
+        return self::$typeMap[$this->attributes['type']] ?? '未知';
     }
 }

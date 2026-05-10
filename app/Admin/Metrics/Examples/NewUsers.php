@@ -2,77 +2,49 @@
 
 namespace App\Admin\Metrics\Examples;
 
+use App\Models\Movie;
 use Dcat\Admin\Widgets\Metrics\Line;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class NewUsers extends Line
 {
-    /**
-     * 初始化卡片内容
-     *
-     * @return void
-     */
     protected function init()
     {
         parent::init();
 
-        $this->title('New Users');
+        $this->title('新增影视');
         $this->dropdown([
-            '7' => 'Last 7 Days',
-            '28' => 'Last 28 Days',
-            '30' => 'Last Month',
-            '365' => 'Last Year',
+            '7' => '最近7天',
+            '28' => '最近28天',
+            '30' => '最近30天',
+            '365' => '最近一年',
         ]);
     }
 
-    /**
-     * 处理请求
-     *
-     *
-     * @return mixed|void
-     */
     public function handle(Request $request)
     {
-        $generator = function ($len, $min = 10, $max = 300) {
-            for ($i = 0; $i <= $len; $i++) {
-                yield mt_rand($min, $max);
-            }
-        };
+        $days = (int) ($request->input('option', 7));
+        $since = now()->subDays($days);
 
-        switch ($request->input('option')) {
-            case '365':
-                // 卡片内容
-                $this->withContent(mt_rand(1000, 5000).'k');
-                // 图表数据
-                $this->withChart(collect($generator(30))->toArray());
-                break;
-            case '30':
-                // 卡片内容
-                $this->withContent(mt_rand(400, 1000).'k');
-                // 图表数据
-                $this->withChart(collect($generator(30))->toArray());
-                break;
-            case '28':
-                // 卡片内容
-                $this->withContent(mt_rand(400, 1000).'k');
-                // 图表数据
-                $this->withChart(collect($generator(28))->toArray());
-                break;
-            case '7':
-            default:
-                // 卡片内容
-                $this->withContent('89.2k');
-                // 图表数据
-                $this->withChart([28, 40, 36, 52, 38, 60, 55]);
+        $daily = Movie::where('collected_at', '>=', $since)
+            ->select(DB::raw('DATE(collected_at) as date'), DB::raw('COUNT(*) as count'))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->pluck('count', 'date');
+
+        $data = [];
+        for ($i = $days; $i >= 0; $i--) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $data[] = $daily[$date] ?? 0;
         }
+
+        $total = array_sum($data);
+
+        $this->withContent($total);
+        $this->withChart($data);
     }
 
-    /**
-     * 设置图表数据.
-     *
-     *
-     * @return $this
-     */
     public function withChart(array $data)
     {
         return $this->chart([
@@ -85,12 +57,6 @@ class NewUsers extends Line
         ]);
     }
 
-    /**
-     * 设置卡片内容.
-     *
-     * @param  string  $content
-     * @return $this
-     */
     public function withContent($content)
     {
         return $this->content(

@@ -3,6 +3,7 @@
 <head>
      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7575258986593674" crossorigin="anonymous"></script>
     <meta charset="utf-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="google-adsense-account" content="ca-pub-7575258986593674">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
