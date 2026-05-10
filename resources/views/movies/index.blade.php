@@ -27,18 +27,18 @@
 @section('ld_json')
     <script type="application/ld+json">
         {
-            "@context": "https://schema.org",
-            "@type": "ItemList",
+            "@@context": "https://schema.org",
+            "@@type": "ItemList",
             "name": "影视库 - {{ config('app.name', '光影流年') }}",
             "url": "{{ url('/movies') }}",
             "numberOfItems": "{{ $movies->total() }}",
             "itemListElement": [
                 @foreach($movies as $i => $item)
                 {
-                    "@type": "ListItem",
+                    "@@type": "ListItem",
                     "position": "{{ $i + 1 }}",
                     "item": {
-                        "@type": "Movie",
+                        "@@type": "Movie",
                         "name": "{{ $item->title }}",
                         "url": "{{ url('/movies/' . $item->id . '.html') }}"
                         @if($item->poster_url)

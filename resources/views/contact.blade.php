@@ -29,20 +29,20 @@
 @section('ld_json')
     <script type="application/ld+json">
         {
-            "@context": "https://schema.org",
-            "@graph": [
+            "@@context": "https://schema.org",
+            "@@graph": [
                 {
-                    "@type": "ContactPage",
+                    "@@type": "ContactPage",
                     "name": "联系我们 - {{ config('app.name', '光影流年') }}",
                     "url": "{{ url('/contact') }}",
                     "description": "联系光影流年团队，获取帮助与支持"
                 },
                 {
-                    "@type": "Organization",
+                    "@@type": "Organization",
                     "name": "{{ config('app.name', '光影流年') }}",
                     "url": "{{ url('/') }}",
                     "contactPoint": {
-                        "@type": "ContactPoint",
+                        "@@type": "ContactPoint",
                         "contactType": "customer service",
                         "email": "contact@moviehub.com"
                     }

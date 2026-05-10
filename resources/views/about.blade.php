@@ -24,15 +24,15 @@
 @section('ld_json')
     <script type="application/ld+json">
         {
-            "@context": "https://schema.org",
-            "@graph": [
+            "@@context": "https://schema.org",
+            "@@graph": [
                 {
-                    "@type": "AboutPage",
+                    "@@type": "AboutPage",
                     "name": "关于我们 - {{ config('app.name', '光影流年') }}",
                     "url": "{{ url('/about') }}",
                     "description": "光影流年致力于为影视爱好者打造一个纯粹、优质的内容发现平台",
                     "about": {
-                        "@type": "Organization",
+                        "@@type": "Organization",
                         "name": "{{ config('app.name', '光影流年') }}",
                         "url": "{{ url('/') }}",
                         "description": "每日精选全球高分影视资源"
