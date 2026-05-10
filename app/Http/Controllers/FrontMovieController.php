@@ -61,7 +61,7 @@ class FrontMovieController extends Controller
             ->get()
             ->each(fn ($m) => $m->title = self::cleanTitle($m->title));
 
-        $totalCount = Movie::count();
+        $totalCount = cache()->remember('movie_total_count', 600, fn () => Movie::count());
 
         return view('home', compact(
             'heroMovies', 'latestMovies', 'topRated', 'recentAdded', 'totalCount'
@@ -100,16 +100,18 @@ class FrontMovieController extends Controller
             ['path' => url('/movies')]
         );
 
-        $totalCount = Movie::count();
-        $genres = Movie::join('movie_details', 'movies.id', '=', 'movie_details.movie_id')
-            ->whereNotNull('movie_details.genre')
-            ->selectRaw('movie_details.genre')
-            ->distinct()
-            ->pluck('genre')
-            ->flatMap(fn ($g) => explode(' ', str_replace(['/', '|', ','], ' ', $g)))
-            ->unique()
-            ->values()
-            ->take(12);
+        $totalCount = cache()->remember('movie_total_count', 600, fn () => Movie::count());
+        $genres = cache()->remember('movie_genres', 3600, function () {
+            return Movie::join('movie_details', 'movies.id', '=', 'movie_details.movie_id')
+                ->whereNotNull('movie_details.genre')
+                ->selectRaw('movie_details.genre')
+                ->distinct()
+                ->pluck('genre')
+                ->flatMap(fn ($g) => explode(' ', str_replace(['/', '|', ','], ' ', $g)))
+                ->unique()
+                ->values()
+                ->take(12);
+        });
 
         return view('movies.index', compact('movies', 'totalCount', 'genres', 'genre'));
     }
@@ -130,7 +132,7 @@ class FrontMovieController extends Controller
 
     public function about()
     {
-        $totalCount = Movie::count();
+        $totalCount = cache()->remember('movie_total_count', 600, fn () => Movie::count());
 
         return view('about', compact('totalCount'));
     }

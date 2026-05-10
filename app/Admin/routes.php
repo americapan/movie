@@ -1,6 +1,7 @@
 <?php
 
 use App\Admin\Controllers\MovieController;
+use App\Admin\Controllers\SearchLogController;
 use App\Admin\Controllers\VisitLogController;
 use Dcat\Admin\Admin;
 use Illuminate\Routing\Router;
@@ -30,6 +31,9 @@ Route::group([
 
     // 访问日志
     $router->resource('/visit-log', VisitLogController::class);
+
+    // 搜索日志
+    $router->resource('/search-log', SearchLogController::class);
 
     // 定时任务
     $router->get('/task', 'TaskController@index');

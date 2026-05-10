@@ -3,7 +3,13 @@
     "allow": [
       "Bash(git *)",
       "Bash(php artisan *)",
-      "Bash(./vendor/bin/pint *)"
+      "Bash(./vendor/bin/pint *)",
+      "WebSearch",
+      "Bash(npx skills *)",
+      "Bash(claude plugin *)",
+      "Bash(curl -sI https://gitee.com/TristanSun/superpowers)",
+      "Bash(GIT_HTTP_LOW_SPEED_LIMIT=0 GIT_HTTP_LOW_SPEED_TIME=999999 git clone *)",
+      "Bash(/plugin marketplace *)"
     ]
   }
 }

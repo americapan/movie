@@ -7,6 +7,7 @@ use App\Models\MovieDetail;
 use DOMDocument;
 use DOMXPath;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class MovieScraperService
 {
@@ -19,32 +20,51 @@ class MovieScraperService
         for ($page = 1; $page <= 5; $page++) {
             $url = $page === 1 ? $this->listUrl : "https://www.rrdynb.com/movie/list_2_{$page}.html";
 
-            $movies = $this->scrapeListPage($url);
+            try {
+                $movies = $this->scrapeListPage($url);
+            } catch (\Throwable $e) {
+                Log::error("Scrape list page failed: {$url}", ['error' => $e->getMessage()]);
+
+                continue;
+            }
 
             foreach ($movies as $movieData) {
-                $movie = $this->saveOrUpdateMovie($movieData);
-                if ($movie && ! $movie->detail) {
-                    $detailData = $this->scrapeDetailPage($movieData['source_url']);
-                    if ($detailData) {
-                        $this->saveOrUpdateDetail($movie, $detailData);
+                try {
+                    $movie = $this->saveOrUpdateMovie($movieData);
+                    if ($movie && ! $movie->detail) {
+                        $detailData = $this->scrapeDetailPage($movieData['source_url']);
+                        if ($detailData) {
+                            $this->saveOrUpdateDetail($movie, $detailData);
+                        }
+                        usleep(500000);
                     }
-                    usleep(500000);
+                } catch (\Throwable $e) {
+                    Log::error("Scrape movie failed: {$movieData['title']}", ['error' => $e->getMessage()]);
                 }
             }
 
             usleep(500000);
         }
+
+        cache()->forget('movie_genres');
+        cache()->forget('movie_total_count');
     }
 
     private function fetchPage(string $url): string
     {
-        return Http::withOptions([
-            'verify' => false,
-        ])->withHeaders([
-            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language' => 'zh-CN,zh;q=0.9,en;q=0.8',
-        ])->timeout(30)->get($url)->body();
+        try {
+            return Http::withOptions([
+                'verify' => false,
+            ])->withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language' => 'zh-CN,zh;q=0.9,en;q=0.8',
+            ])->timeout(30)->get($url)->body();
+        } catch (\Throwable $e) {
+            Log::warning("HTTP fetch failed: {$url}", ['error' => $e->getMessage()]);
+
+            return '';
+        }
     }
 
     public function scrapeListPage(string $url): array
