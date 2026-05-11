@@ -110,7 +110,8 @@ class FrontMovieController extends Controller
                 ->flatMap(fn ($g) => explode(' ', str_replace(['/', '|', ','], ' ', $g)))
                 ->unique()
                 ->values()
-                ->take(12);
+                ->take(12)
+                ->toArray();
         });
 
         return view('movies.index', compact('movies', 'totalCount', 'genres', 'genre'));

@@ -69,7 +69,7 @@
                 </div>
             </div>
 
-            @if($genres->count())
+            @if(count($genres))
             <div class="flex flex-wrap gap-2 mb-4 pb-6 border-b border-[#262422]/50">
                 @foreach($genres as $genre)
                 <a href="?genre={{ urlencode($genre) }}" class="text-xs px-3 py-1.5 rounded-full border transition-all {{ request('genre') === $genre ? 'border-[#C9A96E] text-[#C9A96E] bg-[#C9A96E]/10' : 'border-[#262422] text-[#8b8478] hover:border-[#C9A96E]/50 hover:text-[#e3ded5] cursor-pointer' }}">{{ $genre }}</a>
