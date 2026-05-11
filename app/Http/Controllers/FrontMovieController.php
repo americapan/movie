@@ -101,7 +101,7 @@ class FrontMovieController extends Controller
         );
 
         $totalCount = cache()->remember('movie_total_count', 600, fn () => Movie::count());
-        $genres = cache()->remember('movie_genres', 3600, function () {
+        $genres = cache()->remember('movie_genres_v2', 3600, function () {
             return Movie::join('movie_details', 'movies.id', '=', 'movie_details.movie_id')
                 ->whereNotNull('movie_details.genre')
                 ->selectRaw('movie_details.genre')
